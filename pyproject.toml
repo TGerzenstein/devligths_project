@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "devligths-project"
+version = "0.1.0"
+description = "\"API Bootcamp Devlights\""
+authors = ["Tatiana <tatigerzens@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = {extras = ["standard"], version = "^0.112.1"}
+pydantic-mongo = "^2.3.0"
+pymongo = "^4.8.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
