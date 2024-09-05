@@ -2,24 +2,25 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 from enum import Enum # Supports for enumerations
 
-
 __all__: list[str] = ["User"]
 
-""" # enum : clases que listan todos los valores posibles que puede tomar una instancia
-class SetupRole(str, Enum):
-    customer = "customer"
-    seller = "seller"
-
-# enum for role
-class Role(str, Enum):
-    admin = "admin"
-    customer = "customer"
-    seller = "seller"
-     """
 
 class User(BaseModel):
-    id: Optional[str]
-    name: str 
-    email: str 
-    password: str 
-    
+    name: str
+    email: str
+    password: str
+    disabled: bool 
+
+    class Config:
+        from_attributes = True  
+
+    @classmethod
+    def from_mongo(cls, data: dict):
+
+        return cls(
+            id = str(data["_id"]),
+            name = data["name"],
+            email = data["email"],
+            password = data["password"],
+            disabled = data.get("disabled", False) 
+        )
