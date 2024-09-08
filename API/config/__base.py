@@ -19,7 +19,7 @@ if not SECRET_KEY:
     raise Exception("Secret key not found")
 
 
-logger: Logger = logging.getLogger("uvicorn")
 
-logging.basicConfig(level=logging.INFO)
+#logger: Logger = logging.getLogger("uvicorn")
+#logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("passlib").setLevel(logging.ERROR)
