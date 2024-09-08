@@ -1,17 +1,13 @@
 from fastapi.routing import APIRouter
 from fastapi import HTTPException, status, Depends
-from fastapi.responses import JSONResponse
 
 from models import *
-from pydantic_mongo import PydanticObjectId
 from models.products import Product
-from config.database import COLLECTIONS
+from config.database import product_collection
 from bson import ObjectId
-from models.schema import get_all
 
 
 __all__: list[str] = ["products_router"]
-
 
 
 products_router = APIRouter(prefix="/products", 
@@ -20,34 +16,50 @@ products_router = APIRouter(prefix="/products",
 
 
 
-""" #model_dump: create dic
-#GET Request Method
+def get_products(cursor):
+    return [Product.product_db(product) for product in cursor]
+    
+
 @products_router.get("/")
 async def list_products():
-    products = get_all(ProductService((COLLECTIONS)["products"]))
-   # products =  get_all(COLLECTIONS["products"].find(limit=2))
-    return products
+    products = get_products(product_collection.find())
     
-"""
+    if products is not None: 
+        return products
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Products not found")
 
 
-#POST Request Method
 @products_router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_product(product: Product):
-    COLLECTIONS["products"].insert_one(dict(product))
+    product_collection.insert_one(dict(product))
     return {"result message": f"Product created: {product}"}
 
 
-#POST Request Method
+
+""" 
 @products_router.put("/{id}")
 async def update_product(id: str, product: Product):
-    COLLECTIONS["products"].find_one_and_update({"_id": ObjectId(id)}, {"$set": dict(product)})
+    # Excluimos el campo `id` o `_id` del diccionario para evitar modificarlo
+    update_data = product.model_dump(exclude={"id", "_id"})
     
+    updated_product = product_collection.find_one_and_update(
+        {"_id": ObjectId(id)},  # Convertimos el id a ObjectId
+        {"$set": update_data},  # Solo actualizamos los campos válidos
+        return_document=True  # Devolvemos el documento actualizado
+    )
     
-#DELETE Request Method
+    if updated_product:
+        return {"message": "Product updated successfully", "product": updated_product}
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    
+     """
+
+
 @products_router.delete("/{id}")
 async def delete_product(id: str):
-    COLLECTIONS["products"].find_one_and_delete({"_id": ObjectId(id)})
+    product_collection.find_one_and_delete({"_id": ObjectId(id)})
     return {"Message": "Product deleted"}
     
-
+    
